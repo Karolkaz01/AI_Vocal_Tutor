@@ -17,4 +17,5 @@ export interface Message {
 export interface Settings {
   apiKey: string;
   model: string;
+  theme?: 'light' | 'dark';
 }

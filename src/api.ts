@@ -1,6 +1,6 @@
 import type { Message, Settings } from './types';
 
-export const SYSTEM_PROMPT = `You are an expert vocal coach. Analyze the user's audio recordings for pitch accuracy, breath support, tone, vocal fry, and resonance. Provide constructive, specific feedback and exercises. Never just summarize the lyrics; focus purely on the vocal performance. Treat the provided media (audio/video) as the student's performance.`;
+export const SYSTEM_PROMPT = `You are an expert vocal tutor. Analyze the user's audio recordings for pitch accuracy, breath support, tone, vocal fry, and resonance. Provide constructive, specific feedback and exercises. Never just summarize the lyrics; focus purely on the vocal performance. Treat the provided media (audio/video) as the student's performance.`;
 
 export async function fetchChatCompletion(
   messages: Message[],
@@ -21,7 +21,7 @@ export async function fetchChatCompletion(
       'Authorization': `Bearer ${settings.apiKey}`,
       'Content-Type': 'application/json',
       'HTTP-Referer': window.location.href, // Wymagane przez OpenRouter
-      'X-Title': 'Vocal Coach Bot', // Opcjonalne
+      'X-Title': 'Vocal Tutor Bot', // Opcjonalne
     },
     body: JSON.stringify({
       model: settings.model,

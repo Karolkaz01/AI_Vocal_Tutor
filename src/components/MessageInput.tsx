@@ -4,9 +4,10 @@ import { Send, Mic, Square, Trash2 } from 'lucide-react';
 interface MessageInputProps {
   onSendMessage: (text: string, audioBlob?: Blob) => void;
   disabled: boolean;
+  isFloating?: boolean;
 }
 
-export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
+export function MessageInput({ onSendMessage, disabled, isFloating }: MessageInputProps) {
   const [text, setText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
@@ -56,12 +57,16 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
   };
 
   return (
-    <div className="border-t bg-white p-4">
-      <div className="max-w-3xl mx-auto flex flex-col gap-2">
+    <div className={
+      isFloating 
+        ? "w-full max-w-3xl mx-auto px-4" 
+        : "border-t dark:border-gray-800 bg-white dark:bg-gray-900 p-4 transition-colors duration-200"
+    }>
+      <div className={isFloating ? "flex flex-col gap-2" : "max-w-3xl mx-auto flex flex-col gap-2"}>
         
         {/* Podgląd nagranego audio przed wysłaniem */}
         {audioBlob && !isRecording && (
-          <div className="flex items-center gap-3 bg-blue-50 p-2 rounded-lg border border-blue-200 w-fit">
+          <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/30 p-2 rounded-lg border border-blue-200 dark:border-blue-800/50 w-fit">
             <audio controls src={URL.createObjectURL(audioBlob)} className="h-8 w-48" />
             <button 
               onClick={() => setAudioBlob(null)}
@@ -85,7 +90,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
             }}
             placeholder={isRecording ? 'Nagrywanie w toku...' : 'Wpisz wiadomość...'}
             disabled={disabled || isRecording}
-            className="flex-1 resize-none overflow-hidden rounded-xl border border-gray-300 p-3 max-h-32 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+            className="flex-1 resize-none overflow-hidden rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-3 max-h-32 min-h-[52px] focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 dark:disabled:bg-gray-900/50 disabled:text-gray-500 dark:disabled:text-gray-500 transition-colors duration-200"
             rows={1}
           />
           
@@ -95,7 +100,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
             className={`p-3 rounded-full flex-shrink-0 transition-colors ${
               isRecording 
                 ? 'bg-red-500 hover:bg-red-600 text-white animate-pulse' 
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
             } disabled:opacity-50`}
             title={isRecording ? 'Zatrzymaj nagrywanie' : 'Nagraj audio'}
           >

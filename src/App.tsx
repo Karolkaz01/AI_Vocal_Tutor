@@ -4,11 +4,12 @@ import { ChatWindow } from './components/ChatWindow';
 import { MessageInput } from './components/MessageInput';
 import { SettingsModal } from './components/SettingsModal';
 import { fetchChatCompletion } from './api';
-import { Settings as SettingsIcon, Mic2 } from 'lucide-react';
+import { Settings as SettingsIcon, Mic2, Moon, Sun, Bot } from 'lucide-react';
 
 const DEFAULT_SETTINGS: Settings = {
   apiKey: '',
   model: 'google/gemini-1.5-pro',
+  theme: 'dark',
 };
 
 // Konwersja Bloba na string Base64 Data URI
@@ -31,11 +32,11 @@ function App() {
 
   // Wczytywanie z localStorage
   useEffect(() => {
-    const savedSettings = localStorage.getItem('vocalCoachSettings');
+    const savedSettings = localStorage.getItem('vocalTutorSettings');
     if (savedSettings) {
       setSettings(JSON.parse(savedSettings));
     }
-    const savedMessages = localStorage.getItem('vocalCoachMessages');
+    const savedMessages = localStorage.getItem('vocalTutorMessages');
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
     }
@@ -43,12 +44,20 @@ function App() {
 
   // Zapis do localStorage
   useEffect(() => {
-    localStorage.setItem('vocalCoachSettings', JSON.stringify(settings));
+    localStorage.setItem('vocalTutorSettings', JSON.stringify(settings));
   }, [settings]);
 
   useEffect(() => {
-    localStorage.setItem('vocalCoachMessages', JSON.stringify(messages));
+    localStorage.setItem('vocalTutorMessages', JSON.stringify(messages));
   }, [messages]);
+
+  useEffect(() => {
+    if (settings.theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [settings.theme]);
 
   const handleSendMessage = async (text: string, audioBlob?: Blob) => {
     if (!settings.apiKey) {
@@ -96,9 +105,10 @@ function App() {
         content: assistantText,
       };
       setMessages(prev => [...prev, newAssistantMessage]);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Chat error:', error);
-      alert(error.message || 'Wystąpił błąd podczas komunikacji z API.');
+      const errorMessage = error instanceof Error ? error.message : 'Wystąpił błąd podczas komunikacji z API.';
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -110,23 +120,34 @@ function App() {
     }
   };
 
+  const toggleTheme = () => {
+    setSettings(prev => ({ ...prev, theme: prev.theme === 'dark' ? 'light' : 'dark' }));
+  };
+
   return (
-    <div className="flex flex-col h-screen bg-gray-100 font-sans">
-      <header className="bg-white border-b shadow-sm px-6 py-3 flex justify-between items-center z-10">
-        <div className="flex items-center gap-2 text-blue-600">
+    <div className="flex flex-col h-[100dvh] bg-gray-100 dark:bg-gray-950 font-sans transition-colors duration-200">
+      <header className="bg-white dark:bg-gray-900 border-b dark:border-gray-800 shadow-sm px-6 py-3 flex justify-between items-center z-10 transition-colors duration-200">
+        <div className="flex items-center gap-2 text-blue-600 dark:text-blue-500">
           <Mic2 size={24} />
-          <h1 className="text-xl font-bold">Vocal Coach AI</h1>
+          <h1 className="text-xl font-bold dark:text-gray-100">AI Vocal Tutor</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={clearChat}
-            className="text-sm text-gray-500 hover:text-red-500 transition-colors"
+            className="text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
           >
             Wyczyść czat
           </button>
           <button
+            onClick={toggleTheme}
+            className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            title="Przełącz motyw"
+          >
+            {settings.theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+          <button
             onClick={() => setIsSettingsOpen(true)}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
             title="Ustawienia"
           >
             <SettingsIcon size={20} />
@@ -134,9 +155,27 @@ function App() {
         </div>
       </header>
 
-      <ChatWindow messages={messages} isLoading={isLoading} />
-      
-      <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
+      <main className="flex-1 flex flex-col overflow-hidden relative">
+        {messages.length === 0 ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+            <div className="flex flex-col items-center justify-center mb-8 text-gray-500 dark:text-gray-400">
+              <Bot size={64} className="mb-4 text-blue-500 dark:text-blue-400" />
+              <p className="text-2xl font-semibold dark:text-gray-200 text-center">Twój wirtualny trener wokalny</p>
+              <p className="text-sm text-center max-w-md mt-2 dark:text-gray-400">
+                Nagraj swój śpiew, a ja przeanalizuję go pod kątem intonacji, barwy i techniki!
+              </p>
+            </div>
+            <div className="w-full">
+              <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} isFloating={true} />
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            <ChatWindow messages={messages} isLoading={isLoading} />
+            <MessageInput onSendMessage={handleSendMessage} disabled={isLoading} />
+          </div>
+        )}
+      </main>
 
       <SettingsModal
         isOpen={isSettingsOpen}
